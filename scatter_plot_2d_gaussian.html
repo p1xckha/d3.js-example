@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bar chart example</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  </head>
+  <body>
+    <h1>Scatter plot of 2d gaussian</h1>
+    <div id="root"></div>
+
+    <script type="text/javascript">
+      /************************************
+       * generate 2D gaussian Data
+       ************************************/
+
+      // Function to generate 2D Gaussian data
+      function generateGaussianData(numPoints, meanX, meanY, stdDevX, stdDevY) {
+        const data = [];
+        for (let i = 0; i < numPoints; i++) {
+          const u1 = Math.random();
+          const u2 = Math.random();
+
+          // Box–Muller transform
+          const z1 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+          const z2 = Math.sqrt(-2 * Math.log(u1)) * Math.sin(2 * Math.PI * u2);
+
+          const x = meanX + z1 * stdDevX;
+          const y = meanY + z2 * stdDevY;
+
+          data.push({ x, y });
+        }
+        return data;
+      }
+
+      // Set parameters for the Gaussian distribution
+      const numPoints = 20; // Number of data points
+      const meanX = 100; // Mean of X
+      const meanY = 100; // Mean of Y
+      const stdDevX = 20; // Standard deviation of X
+      const stdDevY = 10; // Standard deviation of Y
+
+      // Generate the data
+      const gaussianData = generateGaussianData(
+        numPoints,
+        meanX,
+        meanY,
+        stdDevX,
+        stdDevY
+      );
+
+      console.log(gaussianData);
+
+      /**********************************
+       * scatter plot
+       *************************************/
+
+      // Declare the chart dimensions and margins.
+      const width = 500;
+      const height = 500;
+      const marginTop = 20;
+      const marginRight = 20;
+      const marginBottom = 30;
+      const marginLeft = 40;
+
+      // Declare the x (horizontal position) scale.
+      const x = d3
+        .scaleLinear()
+        .domain([meanX - 3 * stdDevX, meanX + 3 * stdDevX])
+        .range([marginLeft, width - marginRight]);
+
+      // Declare the y (vertical position) scale.
+      const y = d3
+        .scaleLinear()
+        .domain([meanY - 3 * stdDevY, meanY + 3 * stdDevY])
+        .range([height - marginBottom, marginTop]);
+
+      // Create SVG
+      const svg = d3.select("#root").append("svg");
+      svg.attr("width", width);
+      svg.attr("height", height);
+
+      // Add the x-axis
+      svg
+        .append("g")
+        .attr("transform", `translate(0,${height - marginBottom})`)
+        .call(d3.axisBottom(x));
+
+      // Add the y-axis
+      svg
+        .append("g")
+        .attr("transform", `translate(${marginLeft}, 0)`)
+        .call(d3.axisLeft(y));
+
+      // points
+      const circlePoints = svg.selectAll("circle").data(gaussianData).enter();
+      circlePoints
+        .append("circle")
+        .attr("cx", function (point, index) {
+          return x(point.x);
+        })
+        .attr("cy", function (point, index) {
+          return y(point.y);
+        })
+        .attr("r", 5);
+    </script>
+
+    <h2>comment</h2>
+    <p>Press `ctrl + shift + I` to see SVG elements.</p>
+
+    <h2>Reference</h2>
+    <ul>
+      <li>
+        <a href="https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform"
+          >Box–Muller transform</a
+        >
+      </li>
+    </ul>
+  </body>
+</html>

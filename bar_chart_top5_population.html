@@ -112,7 +112,7 @@
         .append("text")
         .text(function (d) {
           const popuBillion = d.population / 1000000000;
-          return popuBillion.toFixed(3); // remain two decimals
+          return popuBillion.toFixed(3); // remain three decimals
         })
         .attr("x", function (d, index) {
           return (
