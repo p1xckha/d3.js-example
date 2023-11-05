@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Creating an SVG Image with Cos and Sin</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  </head>
+  <body>
+    <h1>SVG Image with circles</h1>
+    <div id="root"></div>
+
+    <script type="text/javascript">
+      /********************** 
+       create svg 
+      ***********************/
+      const svg = d3.select("#root").append("svg");
+      const width = 320;
+      const height = 320;
+      svg.attr("width", width);
+      svg.attr("height", height);
+
+      // Create a group element to hold the points
+      const pointsGroup = svg.append("g");
+
+      /********************** 
+       create circle points 
+      ***********************/
+      const numPoints = 12;
+      const radius = 100;
+      const centerX = width / 2;
+      const centerY = height / 2;
+
+      // Calculate and append points on the circle
+      // https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle
+
+      for (let i = 0; i < numPoints; i++) {
+        const angle = (i / numPoints) * 2 * Math.PI;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        const r = 5;
+        const fill = "blue";
+        const stroke = "black";
+
+        // can you simplify this process?
+        pointsGroup
+          .append("circle")
+          .attr("cx", x)
+          .attr("cy", y)
+          .attr("r", r)
+          .attr("fill", fill)
+          .attr("stroke", stroke)
+          .attr("stroke-width", 0.1);
+      }
+
+      /********************** 
+       add a text at the center of svg
+      ***********************/
+
+      const text = svg.append("text");
+      text
+        .attr("x", width / 2)
+        .attr("y", height / 2)
+        .attr("font-size", 15)
+        .attr("text-anchor", "middle")
+        .attr("fill", "red")
+        .text("SVG Example");
+    </script>
+
+    <p>Press `ctrl + shift + I` to see svg elements.</p>
+  </body>
+</html>

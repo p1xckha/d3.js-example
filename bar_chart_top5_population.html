@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bar chart example</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  </head>
+  <body>
+    <h1>Top 5 population by country</h1>
+    <div id="root"></div>
+
+    <script type="text/javascript">
+      /* Population data */
+      const top5population = [
+        {
+          country: "India",
+          region: "Asia",
+          population: 1428627663,
+        },
+        {
+          country: "China",
+          region: "Asia",
+          population: 1425671352,
+        },
+        {
+          country: "United States",
+          region: "Americas",
+          population: 339996564,
+        },
+        {
+          country: "Indonesia",
+          region: "Asia",
+          population: 277534123,
+        },
+        {
+          country: "Pakistan",
+          region: "Asia",
+          population: 240485658,
+        },
+      ];
+
+      /********************************************
+                         Create SVG
+            *********************************************/
+      const svg = d3.select("#root").append("svg");
+      const width = 320;
+      const height = 320;
+      svg.attr("width", width);
+      svg.attr("height", height);
+
+      /*********************************************
+       * Create a bar chart
+       *********************************************/
+
+      const maxPopulation = top5population[0].population;
+
+      /* bars */
+      const rectangles = svg
+        .selectAll("rect")
+        .data(top5population)
+        .enter()
+        .append("rect");
+
+      const barPadding = 3;
+      rectangles
+        .attr("x", function (d, index) {
+          return (index * width) / top5population.length;
+        })
+        .attr("y", function (d) {
+          const y = height - (d.population / maxPopulation) * height;
+          return y.toFixed(2);
+        })
+        .attr("width", width / top5population.length - barPadding)
+        .attr("height", function (d) {
+          return (d.population / maxPopulation) * height;
+        })
+        .attr("fill", function (d) {
+          return (
+            "rgb(" + Math.round((255 * d.population) / maxPopulation) + ",1,1)"
+          );
+        });
+
+      /* country labels */
+      const countryLabels = svg
+        .selectAll("text.country-label")
+        .data(top5population)
+        .enter();
+
+      countryLabels
+        .append("text")
+        .text(function (d) {
+          return d.country;
+        })
+        .attr("x", function (d, index) {
+          return (
+            (index * width) / top5population.length +
+            width / top5population.length / 2
+          );
+        })
+        .attr("y", height - 10)
+        .attr("font-size", 9)
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("class", "country-label");
+
+      /* population texts */
+      const texts = svg
+        .selectAll("text.population") // <text class='poplulation'>
+        .data(top5population)
+        .enter();
+      texts
+        .append("text")
+        .text(function (d) {
+          const popuBillion = d.population / 1000000000;
+          return popuBillion.toFixed(3); // remain two decimals
+        })
+        .attr("x", function (d, index) {
+          return (
+            (index * width) / top5population.length +
+            width / top5population.length / 2
+          );
+        })
+        .attr("y", function (d) {
+          const y = height - (height * d.population) / maxPopulation / 2;
+          return y.toFixed(2);
+        })
+        .attr("fill", "white")
+        .attr("text-anchor", "middle");
+    </script>
+
+    <p>Press `ctrl + shift + I` to see SVG elements.</p>
+  </body>
+</html>

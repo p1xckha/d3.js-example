@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>creating an unordered list with style</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  </head>
+  <body>
+    <h1>What days are there in each month in 2023?</h1>
+    <div id="root"></div>
+
+    <script type="text/javascript">
+      data = {
+        months: [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ],
+        numDays: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+      };
+
+      let unorderedList = d3.select("#root").append("ul"); // add a ul tag between <div id="root"> and </div>
+
+      unorderedList.style("list-style-type", function (d) {
+        return "square";
+      });
+
+      unorderedList
+        .selectAll("li")
+        .data(data.months)
+        .enter()
+        .append("li")
+        .text(function (item, index) {
+          return item + " has " + data.numDays[index] + " days.";
+        })
+        .style("color", function (d, index) {
+          if (index < 3) {
+            return "blue";
+          } else if (index < 6) {
+            return "green";
+          } else if (index < 9) {
+            return "red";
+          } else {
+            return "orange";
+          }
+        });
+    </script>
+
+    <p>Press `ctrl + shift + I` to see html elements.</p>
+  </body>
+</html>
