@@ -21,7 +21,7 @@
         const currentDate = new Date(startDate);
 
         while (currentDate <= endDate) {
-          const sales = Math.floor(Math.random() * 1000); // Generate random sales amount
+          const sales = Math.floor(Math.random() * 10000); // Generate random sales amount
           salesData.push({ date: new Date(currentDate), sales: sales });
           currentDate.setDate(currentDate.getDate() + 1); // Increment the date by one day
         }
