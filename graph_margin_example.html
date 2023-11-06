@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>graph margin example</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  </head>
+
+  <body>
+    <h2>plot my data</h2>
+    <h3>dataset</h3>
+    <pre>
+const dataset = [
+        { x: 8, y: 5, color: "red" },
+        { x: 3, y: 0, color: "orange" },
+        { x: 8, y: 1, color: "blue" },
+        { x: 7, y: 2, color: "yellow" },
+        { x: 5, y: 5, color: "gray" },
+      ];</pre
+    >
+
+    <h3>margin(in pixel)</h3>
+    <pre>
+      // margin
+        const marginTop = 50;
+        const marginRight = 60;
+        const marginBottom = 30;
+        const marginLeft = 40;</pre
+    >
+    <h3>svg</h3>
+    <p>width: 600px, height: 300px</p>
+
+    <div id="svg"></div>
+
+    <script type="text/javascript">
+      /******************************
+       * plot points using scaling
+       *****************************/
+
+      // data with renamed properties
+      const dataset = [
+        { x: 8, y: 5, color: "red" },
+        { x: 3, y: 0, color: "orange" },
+        { x: 8, y: 1, color: "blue" },
+        { x: 7, y: 2, color: "yellow" },
+        { x: 5, y: 5, color: "gray" },
+      ];
+
+      // create svg
+      const width = 600;
+      const height = 300;
+
+      const div = d3
+        .select("div#svg")
+        .style("background-color", "rgb(223, 213, 215)")
+        .style("max-width", width + "px") // "px" is needed
+        .style("height", height + "px"); // "px" is needed
+
+      const svg = div.append("svg");
+      svg.attr("width", width).attr("height", height);
+
+      // margin
+      const marginTop = 50;
+      const marginRight = 60;
+      const marginBottom = 30;
+      const marginLeft = 40;
+
+      // x scale
+      const maxX = d3.max(dataset, (d) => d.x);
+      const minX = d3.min(dataset, (d) => d.x);
+      const xScale = d3
+        .scaleLinear()
+        .domain([minX, maxX])
+        .range([marginLeft, width - marginRight]);
+
+      // y scale
+      const minY = d3.min(dataset, (d) => d.y);
+      const maxY = d3.max(dataset, (d) => d.y);
+      const yScale = d3
+        .scaleLinear()
+        .domain([minY, maxY])
+        .range([marginTop, height - marginBottom]);
+
+      // output to the console
+      console.log("minX: ", minX);
+      console.log("maxX: ", maxX);
+      console.log("minY: ", minY);
+      console.log("maxY: ", maxY);
+
+      // Add the x-axis
+      svg
+        .append("g")
+        .attr("transform", `translate(0,${height - marginBottom})`)
+        .call(d3.axisBottom(xScale));
+
+      // Add the y-axis
+      svg
+        .append("g")
+        .attr("transform", `translate(${marginLeft}, 0)`)
+        .call(d3.axisLeft(yScale));
+
+      // plot points
+      const circles = svg
+        .selectAll("circle")
+        .data(dataset)
+        .enter()
+        .append("circle");
+
+      circles
+        .attr("fill", function (d, i) {
+          return d.color;
+        })
+        .attr("cx", function (d, i) {
+          return xScale(d.x);
+        })
+        .attr("cy", function (d, i) {
+          return yScale(d.y);
+        })
+        .attr("r", 5);
+
+      // labels for points
+      const texts = svg
+        .selectAll("text.pointLabel")
+        .data(dataset)
+        .enter()
+        .append("text");
+      texts
+        .attr("class", "pointLabel")
+        .text(function (d) {
+          return "(" + xScale(d.x) + "px," + yScale(d.y) + "px)";
+        })
+        .attr("x", function (d) {
+          return xScale(d.x);
+        })
+        .attr("y", function (d) {
+          return yScale(d.y);
+        })
+        .attr("font-size", 7);
+    </script>
+  </body>
+</html>

@@ -7,11 +7,23 @@
   </head>
   <body>
     <script type="text/javascript">
+      // Hello D3.js!
       d3.select("body").append("h1").text("Hello D3.js!"); // add <h1>Hello D3.js</h1> in body
+
+      // print the version of d3.js
+      d3.select("body")
+        .append("p")
+        .text("d3.js version:" + d3.version);
     </script>
 
     <h2>Script code:</h2>
-    <pre>d3.select("body").append("h1").text("Hello D3.js");</pre>
+    <pre>
+      d3.select("body").append("h1").text("Hello D3.js!"); 
+      d3.select("body")
+        .append("p")
+        .text("d3.js version:" + d3.version);
+        </pre
+    >
 
     <p>Press `ctrl + shift + I`. You will notice that h1 element is added.</p>
   </body>

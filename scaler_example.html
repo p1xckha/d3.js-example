@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Hello D3.js!</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  </head>
+
+  <body>
+    <script type="text/javascript">
+      /*******************************************
+       *  Scale example
+       ******************************************/
+
+      // linear conversion
+      const xScale = d3
+        .scaleLinear()
+        .domain([0, 100]) // domain of our data x
+        .range([0, 600]); // horizontal position [pixel] in svg
+
+      // example output
+      console.log("xScale conversion:");
+      console.log("0 -> ", xScale(0)); // 0
+      console.log("100 -> ", xScale(100)); // 600
+      console.log("50 -> ", xScale(50)); // 300
+
+      // linear conversion
+      const yScale = d3
+        .scaleLinear()
+        .domain([0, 100]) // domain of our data y
+        .range([0, 300]); // vertical position [pixel] in svg
+
+      // example output
+      console.log("yScale conversion:");
+      console.log("0 -> ", yScale(0)); // 0
+      console.log("100 -> ", yScale(100)); // 300
+      console.log("50 -> ", yScale(50)); // 150
+    </script>
+
+    <p>Press ctrl+shift+I and see the console output</p>
+  </body>
+</html>
