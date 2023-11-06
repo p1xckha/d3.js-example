@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Axes example</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <style>
+      .axis path,
+      .axis line {
+        stroke: darkgreen;
+        shape-rendering: auto;
+      }
+      .axis text {
+        font-family: Arial, Helvetica, sans-serif;
+        font-weight: bold;
+        font-size: 14px;
+        fill: darkgreen;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Axes example</h1>
+    <div id="imageTop"></div>
+    <p>press ctrl+shift+I to see the svg element</p>
+
+    <script type="text/javascript">
+      /***************************
+       * create svg
+       **************************/
+
+      // Set up the dimensions of the chart
+      const width = 600;
+      const height = 300;
+      const margin = { top: 20, right: 20, bottom: 50, left: 50 };
+
+      // Create an SVG element
+      const svg = d3
+        .select("body")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      /****************************
+       * scale
+       *************************/
+      // Create scales for x and y with log scale for y
+      const xScale = d3
+        .scaleLinear()
+        .domain([0, 100])
+        .range([margin.left, width - margin.right]);
+
+      const yScale = d3
+        .scaleLinear()
+        .domain([0, 10])
+        .range([height - margin.bottom, margin.top]);
+
+      /*********************************
+       * Axes
+       *******************************/
+      const xAxis = d3
+        .axisBottom()
+        .scale(xScale)
+        .tickValues([0, 2, 4, 16, 32, 64, 100]); // specify tick values
+
+      const yAxis = d3.axisLeft().scale(yScale).ticks(10); // 10 ticks
+
+      // add axes
+      svg
+        .append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(xAxis);
+
+      svg
+        .append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(yAxis);
+
+      // Add axis labels
+      svg
+        .append("text")
+        .attr("x", width / 2)
+        .attr("y", height - 5)
+        .attr("text-anchor", "middle")
+        .text("X Values");
+
+      svg
+        .append("text")
+        .attr("x", -height / 2)
+        .attr("y", 10)
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(-90)")
+        .text("Y Values");
+
+      /**************************
+       * generate random data
+       **************************/
+      const data = [];
+      for (let i = 0; i < 100; i++) {
+        data.push(5 + Math.random() * 5);
+      }
+
+      console.log("data: ", data);
+
+      /***************************
+        plot data
+      ****************************/
+
+      // create a path
+      const path = svg.append("path");
+
+      // Create a line generator
+      const line = d3
+        .line()
+        .x((d, i) => xScale(i))
+        .y((d, i) => yScale(d));
+
+      path
+        .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "olive")
+        .attr("stroke-width", 2)
+        .attr("d", line);
+    </script>
+  </body>
+</html>
