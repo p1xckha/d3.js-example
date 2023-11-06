@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Log Scale example</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  </head>
+  <body>
+    <h1>log scale example</h1>
+    <div id="imageTop"></div>
+    <p>press ctrl+shift+I to see the svg element</p>
+
+    <script type="text/javascript">
+      // Generate exponentially increasing data for x
+      const xValues = [];
+      for (let i = 1; i <= 10; i++) {
+        xValues.push(i);
+      }
+
+      // Generate corresponding y-values as exponential growth
+      const yValues = xValues.map((x) => Math.exp(x));
+
+      // Set up the dimensions of the chart
+      const width = 600;
+      const height = 300;
+      const margin = { top: 20, right: 20, bottom: 50, left: 50 };
+
+      // Create an SVG element
+      const svg = d3
+        .select("body")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // Create scales for x and y with log scale for y
+      const xScale = d3
+        .scaleLinear()
+        .domain([1, 10])
+        .range([margin.left, width - margin.right]);
+
+      const yScale = d3
+        .scaleLog()
+        .domain([1, Math.exp(10)])
+        .range([height - margin.bottom, margin.top]);
+
+      // Create a line generator
+      const line = d3
+        .line()
+        .x((d, i) => xScale(xValues[i]))
+        .y((d) => yScale(d));
+
+      // Create the line path
+      svg
+        .append("path")
+        .datum(yValues)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 2)
+        .attr("d", line);
+
+      // Add axes
+      svg
+        .append("g")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(xScale));
+
+      svg
+        .append("g")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(yScale));
+
+      // Add labels
+      svg
+        .append("text")
+        .attr("x", width / 2)
+        .attr("y", height - 5)
+        .attr("text-anchor", "middle")
+        .text("X Values");
+
+      svg
+        .append("text")
+        .attr("x", -height / 2)
+        .attr("y", 10)
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(-90)") // rotated counterclockwise by 90 degrees(center: the end of text)
+        .text("Log(Y Values)");
+    </script>
+  </body>
+</html>
