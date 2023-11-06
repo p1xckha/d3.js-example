@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>color scale example</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  </head>
+
+  <body>
+    <h1>random bar chart in color</h1>
+    <div id="topImage"></div>
+    <p>large(red) &lt;-&gt; small (blue)</p>
+    <p>press ctrl+shift+I to see the output</p>
+
+    <script type="text/javascript">
+      /*****************************
+       * generating random numbers
+       *****************************/
+      const randomNumbers = [];
+      for (let i = 0; i < 20; i++) {
+        randomNumbers.push(Math.random() * 100);
+      }
+      console.log("randomNumbers", randomNumbers);
+
+      const minY = Math.min(...randomNumbers);
+      const maxY = Math.max(...randomNumbers);
+
+      console.log(`minY, maxY = ${minY}, ${maxY}`);
+
+      /*******************************
+       * create color scale
+       ********************************/
+      const colorScale = d3
+        .scaleLinear()
+        .domain([minY, maxY])
+        .range(["blue", "red"]);
+
+      /****************************************
+       * create svg
+       ****************************************/
+      const width = 600;
+      const height = 300;
+      const svg = d3
+        .select("div#topImage")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // margin
+      const marginTop = 30;
+      const marginRight = 30;
+      const marginBottom = 30;
+      const marginLeft = 30;
+
+      // create x scale
+      const xScale = d3
+        .scaleLinear()
+        .domain([0, randomNumbers.length])
+        .range([marginLeft, width - marginRight]);
+
+      // create y scale
+      const yScale = d3
+        .scaleLinear()
+        .domain([0, 100])
+        .range([height - marginBottom, marginTop]);
+
+      /****************************************
+       * create bars
+       ****************************************/
+      const barPadding = 5;
+      const bars = svg
+        .selectAll("rect")
+        .data(randomNumbers)
+        .enter()
+        .append("rect");
+
+      bars
+        .attr("x", function (val, i) {
+          // i=0,..., dataset.length
+          return xScale(i);
+        })
+        .attr("y", function (val, i) {
+          return yScale(val);
+        })
+        .attr("width", function (val, i) {
+          return (
+            (width - marginLeft - marginRight) / randomNumbers.length -
+            barPadding
+          );
+        })
+        .attr("height", function (val, i) {
+          return yScale(0) - yScale(val);
+        })
+        .attr("fill", function (val, i) {
+          return colorScale(val);
+        });
+
+      /*********************************************
+       * add axes
+       ***********************************************/
+      // Add the x-axis
+      svg
+        .append("g")
+        .attr("transform", `translate(0,${height - marginBottom})`)
+        .call(d3.axisBottom(xScale));
+
+      // Add the y-axis
+      svg
+        .append("g")
+        .attr("transform", `translate(${marginLeft}, 0)`)
+        .call(d3.axisLeft(yScale));
+    </script>
+  </body>
+</html>

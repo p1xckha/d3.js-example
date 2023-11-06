@@ -79,7 +79,7 @@ const dataset = [
       const yScale = d3
         .scaleLinear()
         .domain([minY, maxY])
-        .range([marginTop, height - marginBottom]);
+        .range([height - marginBottom, marginTop]);
 
       // output to the console
       console.log("minX: ", minX);
