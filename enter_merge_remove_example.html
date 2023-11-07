@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>example of enter, merge, and remove in d3.js</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  </head>
+  <body>
+    <h2>text example</h2>
+    <div id="textExample"></div>
+
+    <h2>circles example</h2>
+    <div id="circleExample"></div>
+
+    <p>Press ctrl+shift+I to see the html elements disappear</p>
+
+    <script type="text/javascript">
+      /****************************
+       * example of enter, merge, and remove
+       ***************************/
+      const data = [1, 2, 3, 4];
+
+      // create 4 divs
+      d3.select("div#textExample")
+        .selectAll("div")
+        .data(data)
+        .enter()
+        .append("div")
+        .text((d, i) => "old text " + d);
+
+      // update divs
+      const newData = [100, 200];
+
+      // Merge data with newData
+      const divs = d3.select("div#textExample").selectAll("div").data(newData);
+      divs
+        .enter() // New data enters
+        .append("div")
+        .merge(divs) // Merging old and new data
+        .text((d, i) => "new text " + d);
+
+      // Remove the old elements
+      divs.exit().transition().duration(4000).remove(); // Removing 1, 2, 3, and 4 from divs
+
+      /****************************************
+       * create svg
+       ****************************************/
+      const width = 600;
+      const height = 300;
+      const svg = d3
+        .select("body")
+        .select("div#circleExample")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      const circleData = [
+        { x: 100, y: 100, color: "red" },
+        { x: 100, y: 200, color: "green" },
+        { x: 300, y: 200, color: "olive" },
+        { x: 400, y: 150, color: "orange" },
+      ];
+
+      svg
+        .selectAll("circle")
+        .data(circleData)
+        .enter()
+        .append("circle")
+        .attr("cx", (d) => d.x)
+        .attr("cy", (d) => d.y)
+        .attr("fill", (d) => d.color)
+        .attr("r", 10);
+
+      const newCircleData = [
+        { x: 100, y: 100, color: "pink" },
+        { x: 100, y: 200, color: "darkgreen" },
+      ];
+
+      const circles = svg.selectAll("circle").data(newCircleData);
+
+      // enter new large circles
+      circles
+        .enter()
+        .append("circle")
+        .merge(circles) // overwriting circles
+        .attr("cx", (d) => d.x) // x of center of new circles
+        .attr("cy", (d) => d.y) // y of center of new circles
+        .attr("fill", (d) => d.color) // new circles are filled in this color
+        .attr("r", 60); // radius of new circles
+
+      // remove small circles
+      circles
+        .exit()
+        .transition()
+        .duration(3000)
+        .attr("cx", width / 2)
+        .attr("cy", height / 2)
+        .remove();
+    </script>
+  </body>
+</html>
