@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>color scale example</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  </head>
+
+  <body>
+    <h1>Random Bar Chart in Color</h1>
+    <div id="topImage"></div>
+
+    <button id="update">Update</button>
+    <p>Large (red) &lt;-&gt; Small (blue)</p>
+    <p>if mouse is on a bar, y value will be displayed in a tooltip</p>
+    <p>Press ctrl+shift+I to see the output</p>
+
+    <div
+      id="tooltip"
+      style="
+        position: absolute;
+        display: none;
+        background: #fff;
+        padding: 5px;
+        border: 1px solid #000;
+      "
+    ></div>
+
+    <script type="text/javascript">
+      /*****************************
+       * generating random numbers
+       *****************************/
+
+      const getRandomNumbers = function (minX = 0, maxX = 10, n = 10) {
+        const randomNumbers = [];
+        for (let i = 0; i < n; i++) {
+          randomNumbers.push(minX + Math.random() * (maxX - minX));
+        }
+        return randomNumbers;
+      };
+
+      const randomNumbers = getRandomNumbers();
+
+      console.log("randomNumbers", randomNumbers);
+
+      const minY = Math.min(...randomNumbers);
+      const maxY = Math.max(...randomNumbers);
+
+      console.log(`minY, maxY = ${minY}, ${maxY}`);
+
+      /****************************************
+       * create svg
+       ****************************************/
+      const width = 600;
+      const height = 300;
+      const svg = d3
+        .select("div#topImage")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // margin
+      const margin = { top: 30, right: 30, bottom: 30, left: 30 };
+
+      /****************************
+       * scale
+       *************************/
+      // scaleBand
+      // https://d3js.org/d3-scale/band
+
+      // convert x value into horizontal position in pixel
+      const xScale = d3
+        .scaleBand()
+        .domain(d3.range(randomNumbers.length))
+        .range([margin.left, width - margin.right])
+        .paddingInner(0.05);
+
+      // convert y value into vertical position in pixel
+      const yScale = d3
+        .scaleLinear()
+        .domain([0, 10])
+        .range([height - margin.bottom, margin.top]);
+
+      // convert y value into rgb color to paint bars in color
+      const colorScale = d3
+        .scaleLinear()
+        .domain([0, 10])
+        .range(["blue", "red"]);
+
+      /****************************************
+       * create bars
+       ****************************************/
+      const bars = svg
+        .selectAll("rect")
+        .data(randomNumbers)
+        .enter()
+        .append("rect");
+
+      bars
+        .transition()
+        .duration(1000)
+        .attr("x", (val, i) => xScale(i))
+        .attr("y", (val, i) => yScale(val))
+        .attr("width", (val, i) => xScale.bandwidth())
+        .attr("height", (val, i) => yScale(0) - yScale(val))
+        .attr("fill", (val, i) => colorScale(val));
+
+      /****************************
+       * tooltip
+       *****************************/
+
+      // Create a tooltip element
+      const tooltip = d3.select("#tooltip");
+
+      // Add a mouseover event listener to bars
+      bars.on("mouseover", function (event, d) {
+        const [x, y] = d3.pointer(event);
+
+        tooltip
+          .style("opacity", 0.7)
+          .style("left", x + "px")
+          .style("top", y + "px")
+          .style("display", "block")
+          .text("y = " + d);
+
+        console.log(`mouseover: y=${d} mouse@(${x},${y}) `);
+      });
+
+      // Add a mouseout event listener to hide the tooltip
+      bars.on("mouseout", function () {
+        tooltip.style("display", "none");
+      });
+
+      /*********************************************
+       * add axes
+       ***********************************************/
+      // Add the x-axis
+      svg
+        .append("g")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(xScale));
+
+      // Add the y-axis
+      svg
+        .append("g")
+        .attr("transform", `translate(${margin.left}, 0)`)
+        .call(d3.axisLeft(yScale));
+
+      /**********************************************
+       * update bars
+       ********************************************/
+      const update = function () {
+        const randomNumbers = getRandomNumbers();
+        bars
+          .data(randomNumbers)
+          .transition()
+          .delay(function (d, i) {
+            return (i * 1000) / randomNumbers.length;
+          })
+          .duration(500)
+          .attr("x", (val, i) => xScale(i))
+          .attr("y", (val, i) => yScale(val))
+          .attr("width", (val, i) => xScale.bandwidth())
+          .attr("height", (val, i) => yScale(0) - yScale(val))
+          .attr("fill", (val, i) => colorScale(val));
+        console.log("update bars: ", randomNumbers);
+      };
+
+      const button = d3.select("#update");
+      button.on("click", function () {
+        update();
+      });
+    </script>
+  </body>
+</html>
