@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Move Circle Along Circular Path</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <h2>mouseover example</h2>
+    <script>
+      const data = d3.range(10);
+      d3.select("body")
+        .selectAll("p")
+        .data(data)
+        .enter()
+        .append("p")
+        .text((d, i) => i + "th paragraph.................")
+        .on("mouseover", function () {
+          d3.select(this)
+            .style("font-weight", "bold")
+            .style("color", "olive")
+            .style("font-size", "25px"); // px needed
+          console.log("mouseover");
+        })
+        .on("mouseout", function () {
+          d3.select(this)
+            .transition()
+            .duration(2000)
+            .style("font-weight", "normal")
+            .style("color", "black")
+            .style("font-size", "16px"); // px needed
+          console.log("mouseout");
+        });
+
+      d3.select("body")
+        .append("p")
+        .on("pointer-events", "none")
+        .text("pointer events are disabled in this paragraph");
+    </script>
+  </body>
+</html>

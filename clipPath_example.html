@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>clipPath example</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  </head>
+  <body>
+    <h1>clipPath example</h1>
+    <div
+      id="graph"
+      style="width: 600px; height: 300px; background-color: pink"
+    ></div>
+
+    <p>Press ctrl+shift+I to see the html elements</p>
+
+    <script type="text/javascript">
+      /****************************************
+       * create svg
+       ****************************************/
+      const width = 600;
+      const height = 300;
+      const svg = d3
+        .select("body")
+        .select("div#graph")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      /*********************************
+       * scale
+       * ***************************/
+
+      const margin = { top: 10, right: 10, bottom: 10, left: 10 };
+
+      const xScale = d3
+        .scaleLinear()
+        .domain([0, 100])
+        .range([margin.left, width - margin.right]);
+
+      const yScale = d3
+        .scaleLinear()
+        .domain([0, 100])
+        .range([height - margin.bottom, margin.top]);
+
+      /****************************
+       * create clipPath
+       ****************************/
+
+      svg
+        .append("clipPath")
+        .attr("id", "circle-area")
+        .append("rect")
+        .attr("x", margin.left)
+        .attr("y", margin.top)
+        .attr("width", width - margin.left - margin.right)
+        .attr("height", height - margin.top - margin.bottom);
+
+      /************************
+       * create circles
+       * **********************/
+      const circleData = [
+        { cx: 50, cy: 30, fill: "orange" },
+        { cx: 0, cy: 0, fill: "blue" },
+        { cx: 100, cy: 100, fill: "red" },
+        { cx: 0, cy: 100, fill: "green" },
+        { cx: 100, cy: 0, fill: "olive" },
+      ];
+      const circleGroup = svg
+        .append("g")
+        .attr("id", "circle-group")
+        .attr("clip-path", "url(#circle-area)");
+
+      const circles = circleGroup
+        .selectAll("circle")
+        .data(circleData)
+        .enter()
+        .append("circle")
+        .attr("cx", (d) => xScale(d.cx))
+        .attr("cy", (d) => yScale(d.cy))
+        .attr("fill", (d) => d.fill)
+        .attr("r", 10);
+    </script>
+  </body>
+</html>
