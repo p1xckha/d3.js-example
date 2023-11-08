@@ -13,6 +13,7 @@
       style="width: 600px; height: 300px; background-color: pink"
     ></div>
 
+    <p>if you click a circle, it automatically moves to the trashBox</p>
     <p>Press ctrl+shift+I to see the html elements</p>
 
     <script type="text/javascript">
@@ -70,6 +71,7 @@
         height: 70,
         fill: "blue",
       };
+
       const trashBox = svg.append("rect");
       trashBox
         .attr("x", trashBoxInfo.x)
@@ -77,6 +79,15 @@
         .attr("width", trashBoxInfo.width)
         .attr("height", trashBoxInfo.height)
         .attr("fill", trashBoxInfo.fill);
+
+      svg
+        .append("text")
+        .text("trashBox")
+        .attr("x", 25)
+        .attr("y", height - 40)
+        .attr("font-size", 10)
+        .style("fill", "white")
+        .attr("text-anchor", "middle");
 
       /************************
        * creating tarshes
