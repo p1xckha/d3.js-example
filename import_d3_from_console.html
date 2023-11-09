@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <script></script>
+    <pre>
+      /**************************
+      * hello d3.js from console
+      *****************************/
+
+     /************ Press ctrl + shift + I to open a web console *************/
+
+     // d3.js was already imported but you can import d3.js from console again.
+     fetch("https://d3js.org/d3.v7.min.js")
+       .then((response) => response.text())
+       .then((data) => {
+         // Create a script element and set its content to the downloaded D3.js code.
+         var script = document.createElement("script");
+         script.textContent = data;
+
+         // Append the script to the document's head.
+         document.head.appendChild(script);
+       })
+       .catch((error) => console.error("Error loading D3.js:", error));
+       
+     /*********************************
+      * add title
+      ************************************/
+
+     d3.select("title").text(
+       "You added the title of this page using a web browser console."
+     );
+
+     /*****************************
+      * add h1 element
+      ********************************/
+
+     d3.select("body").insert("h1", ":first-child").text("Hello D3.js");
+
+     /*****************************
+      * add div element
+      ********************************/
+
+     d3.select("body").insert("div", ":nth-child(2)").attr("id", "root");
+
+     /****************************
+      * add an unordered list
+      ********************************/
+
+     d3.select("body")
+       .append("ul")
+       .attr("class", "my-list")
+       .selectAll("li")
+       .data(d3.range(10))
+       .enter()
+       .append("li")
+       .text((d) => d + "th item");
+
+     /*******************************
+      * add an circle image
+      ********************************/
+
+     // add an svg (300px * 300 px)
+     const width = 300;
+     const height = 300;
+     const svg = d3
+       .select("body")
+       .append("svg")
+       .attr("width", width)
+       .attr("height", height);
+
+     // add an circle to svg
+     svg
+       .append("circle")
+       .attr("cx", width / 2)
+       .attr("cy", height / 2)
+       .attr("r", 100)
+       .attr("fill", "olive");
+    </pre>
+  </body>
+</html>
