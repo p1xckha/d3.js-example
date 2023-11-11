@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>stack bar chart</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <h2>stack bar chart example</h2>
+    <div id="graph"></div>
+
+
+    <h2>data</h2>
+    <pre id="data">      //data
+      const data = [
+        { apple: 10, orange: 5, banana: 8, grape: 22, kiwi: 15 },
+        { apple: 15, orange: 12, banana: 10, grape: 28, kiwi: 20 },
+        { apple: 20, orange: 18, banana: 15, grape: 32, kiwi: 25 },
+        { apple: 25, orange: 22, banana: 20, grape: 35, kiwi: 30 },
+        { apple: 18, orange: 25, banana: 13, grape: 40, kiwi: 18 },
+        { apple: 30, orange: 28, banana: 22, grape: 45, kiwi: 35 },
+        { apple: 22, orange: 15, banana: 18, grape: 38, kiwi: 28 },
+        { apple: 12, orange: 10, banana: 15, grape: 25, kiwi: 22 },
+        { apple: 28, orange: 20, banana: 18, grape: 30, kiwi: 26 },
+        { apple: 32, orange: 25, banana: 23, grape: 42, kiwi: 32 },
+      ];</pre>
+
+    <script type="text/javascript">
+      /**********************************************
+       *  data
+       * *********************************************/
+      //data
+      const data = [
+        { apple: 10, orange: 5, banana: 8, grape: 22, kiwi: 15 },
+        { apple: 15, orange: 12, banana: 10, grape: 28, kiwi: 20 },
+        { apple: 20, orange: 18, banana: 15, grape: 32, kiwi: 25 },
+        { apple: 25, orange: 22, banana: 20, grape: 35, kiwi: 30 },
+        { apple: 18, orange: 25, banana: 13, grape: 40, kiwi: 18 },
+        { apple: 30, orange: 28, banana: 22, grape: 45, kiwi: 35 },
+        { apple: 22, orange: 15, banana: 18, grape: 38, kiwi: 28 },
+        { apple: 12, orange: 10, banana: 15, grape: 25, kiwi: 22 },
+        { apple: 28, orange: 20, banana: 18, grape: 30, kiwi: 26 },
+        { apple: 32, orange: 25, banana: 23, grape: 42, kiwi: 32 },
+      ];
+
+      console.log("data: ", data);
+
+      // keys
+      let keys = Object.keys(data[0]);
+      console.log(keys);
+
+      /********************************************
+       * create svg
+       ********************************************/
+
+      const width = 600;
+      const height = 300;
+      const margin = { top: 20, right: 20, bottom: 50, left: 50 };
+
+      const svg = d3.select("div#graph").append("svg");
+      svg.attr("width", width);
+      svg.attr("height", height);
+
+      /********************
+       * stack
+       *****************/
+
+      // stack
+      let stack = d3.stack().keys(keys);
+      console.log('stack: ', stack)
+
+      /********************
+       * series
+       *****************/
+
+      let series = stack(data);
+      console.log("series is a 3d array: \n", series);
+
+      /*******************
+       * cerate scale
+       *******************/
+      const xScale = d3
+        .scaleBand()
+        .domain(d3.range(data.length))
+        .range([margin.left, width - margin.right])
+        .paddingInner(0.05);
+
+      const maxY = d3.max(data, function (d) {
+        let sum = 0;
+        for (let i = 0; i < keys.length; i++) {
+          sum += d[keys[i]];
+        }
+        return sum;
+      });
+
+      console.log("maxY: ", maxY);
+
+      const yScale = d3
+        .scaleLinear()
+        .domain([0, maxY])
+        .range([height - margin.bottom, margin.top]);
+
+      const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+      /*********************
+       * create bars
+       **********************/
+
+      let fruitGroups = svg
+        .selectAll("g")
+        .data(series)
+        .enter()
+        .append("g")
+        .attr("class", (d, i) => keys[i])
+        .style("fill", (d, i) => colorScale(i)); // each fruits filled in the same color
+
+      let rects = fruitGroups
+        .selectAll("rect")
+        .data((d) => d) // d is an array of baseline and top
+        .enter()
+        .append("rect")
+        .attr("x", (d, i) => xScale(i))
+        .attr("y", (d) => yScale(d[1]))
+        .attr("height", (d, i) => yScale(d[0]) - yScale(d[1]))
+        .attr("width", xScale.bandwidth())
+        .append("title")
+        .attr("x", (d, i) => xScale(i) + xScale.bandwidth() / 2)
+        .attr("y", (d, i) => yScale(0.5 * d[0] + 0.5 * d[1]))
+        .text(function (d) {
+          let fruits = d3.select(this.parentNode.parentNode).attr("class");
+          return fruits + ": " + (d[1] - d[0]);
+        })
+        .attr("text-anchor", "middle")
+        .attr("font-size", "10px");
+
+        /*********************************
+       * Axes
+       *******************************/
+      const xAxis = d3
+        .axisBottom()
+        .scale(xScale)
+        .ticks(data.length); // specify tick values
+
+      const yAxis = d3.axisLeft().scale(yScale).ticks(10); // 10 ticks
+
+      // add axes
+      svg
+        .append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(xAxis);
+
+      svg
+        .append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(yAxis);
+
+      // Add axis labels
+      svg
+        .append("text")
+        .attr("x", width / 2)
+        .attr("y", height - 5)
+        .attr("text-anchor", "middle")
+        .text("X");
+
+      svg
+        .append("text")
+        .attr("x", margin.left/4)
+        .attr("y", margin.top)
+        .attr("text-anchor", "middle")
+        .text("$");
+      
+    </script>
+
+    <h2>Reference</h2>
+
+    <ul>
+      <li><a href="https://d3js.org/d3-shape/stack">stack</a></li>
+      <li><a href="https://d3js.org/d3-scale">scale</a></li>
+      <li><a href="https://github.com/d3/d3-axis">axis</a></li>
+    </ul>
+  </body>
+</html>

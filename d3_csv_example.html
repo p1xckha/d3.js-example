@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>d3.csv example</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <h1>d3.csv example</h1>
+    <p>
+      use vscode with liveserver extension to read a csv file.
+    </p>
+    <h2>list</h2>
+    <div id="list"></div>
+
+    <script type="text/javascript">
+      const filePath = "./sample.csv";
+
+      const callback = function (d, i) {
+        // d: row object, i: index
+        if (i == 0) {
+          d3.select("#list").append("ul");
+        }
+
+        const text = `***${i}th row*** Date:${d.Date}, Value: ${d.Value}`;
+
+        d3.select("div#list ul").append("li").text(text);
+
+        console.log("i: ", i);
+
+        console.log("d", d);
+        console.log(
+          "convert a date string into a date object: ",
+          new Date(d.Date)
+        );
+      };
+
+      // read csv
+      d3.csv(filePath, callback);
+    </script>
+
+    <h2>Reference</h2>
+  </body>
+</html>

@@ -7,18 +7,17 @@
   </head>
   <body>
     <h2>pie chart</h2>
-    <div id="graph">
-    </div>
+    <div id="graph"></div>
 
     <h2>pie(dataset)</h2>
-<div id="print-data"></div>
+    <div id="print-data"></div>
 
     <script type="text/javascript">
       /***************
        * data
        *"***********/
 
-      const dataset = [3,  5, 4, 2, 9];
+      const dataset = [3, 5, 4, 2, 9];
 
       /***************************
        * create svg
@@ -43,19 +42,18 @@
       const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
       /**************
-       * create pie
+       * create pie 
        **************/
 
-      let pie = d3.pie();
+      let pie = d3.pie(); // pie genertor 
       const outerRadius = width / 2;
       const innerRadius = width / 4;
 
-      // path generator function
+      // arc generator 
       const arc = d3.arc().innerRadius(innerRadius).outerRadius(outerRadius);
 
-      console.log("arc:", arc) // arc has many method
-      console.log("pie(dataset)", pie(dataset)) // array of object {data, index, value, startAngle, endAngle, ...}
-
+      console.log("arc:", arc); // arc has many method
+      console.log("pie(dataset)", pie(dataset)); // array of object {data, index, value, startAngle, endAngle, ...}
 
       /**************
        * arc
@@ -80,8 +78,6 @@
         })
         .attr("d", arc);
 
-        
-
       //Labels
       arcs
         .append("text")
@@ -90,25 +86,30 @@
         })
         .attr("text-anchor", "middle")
         .text(function (d) {
-          return d.value + "(index=" + d.index + ")" ;
+          return d.value + "(index=" + d.index + ")";
         });
 
-
-    d3.select("div#print-data").append("ul")
-    .selectAll("li")
-    .data(pie(dataset))
-    .enter()
-    .append("li")
-    .text(
-      (d) => ` data:${d.data}, index:${d.index}, value:${d.value}, startAngle:${d.startAngle}, endAngle:${d.endAngle}... `
-      )
-        
+      d3.select("div#print-data")
+        .append("ul")
+        .selectAll("li")
+        .data(pie(dataset))
+        .enter()
+        .append("li")
+        .text(
+          (d) =>
+            ` data:${d.data}, index:${d.index}, value:${d.value}, startAngle:${d.startAngle}, endAngle:${d.endAngle}... `
+        );
     </script>
 
+    <h2>Reference</h2>
 
-
-<h2>Reference</h2>
-    <a href="https://d3js.org/d3-scale-chromatic/categorical">Categorical schemes </a>
-
+    <ul>
+      <li><a href="https://d3js.org/d3-scale-chromatic/categorical"
+        >Categorical schemes
+      </a></li>
+      <li><a href="https://d3js.org/d3-shape/pie">pie generator</a></li>
+    </ul>
+    
+    
   </body>
 </html>

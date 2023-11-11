@@ -6,15 +6,7 @@
     <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
   </head>
   <body>
-    <h2>Random Data</h2>
-    <div id="data"></div>
-
-    <h2>graph</h2>
-    <p>The defined() function correctly handles NaN values.</p>
-    <p>
-      <span style="color: blue">negative area is displayed in blue</span>, while
-      <span style="color: red">positive area is displayed in red.</span>
-    </p>
+    <h1>area example</h1>
     <div id="graph"></div>
 
     <script type="text/javascript">
@@ -23,28 +15,14 @@
        ********************************/
 
       const data = [
-        { year: 2001, value: Math.random() * 40 - 20 },
-        { year: 2002, value: Math.random() * 40 - 20 },
-        { year: 2003, value: Math.random() * 40 - 20 },
-        { year: 2004, value: Math.random() * 40 - 20 },
-        { year: 2005, value: Math.random() * NaN },
-        { year: 2006, value: Math.random() * 40 - 20 },
-        { year: 2007, value: Math.random() * 40 - 20 },
-        { year: 2008, value: Math.random() * 40 - 20 },
-        { year: 2009, value: Math.random() * 40 - 20 },
-        { year: 2010, value: Math.random() * 40 - 20 },
-        { year: 2011, value: Math.random() * 40 - 20 },
+        { x: 0, y: 20, color: "red" },
+        { x: 10, y: 30, color: "blue" },
+        { x: 20, y: 50, color: "yellow" },
+        { x: 30, y: 70, color: "orange" },
+        { x: 40, y: 40, color: "pink" },
       ];
 
-      console.log(data);
-
-      d3.select("div#data")
-        .append("ul")
-        .selectAll("li")
-        .data(data)
-        .enter()
-        .append("li")
-        .text((d) => `${d.year} : ${d.value}`);
+      console.log("data: ", data);
 
       /***************************
        * create svg
@@ -69,23 +47,61 @@
       // Create scales for x and y with log scale for y
       const xScale = d3
         .scaleLinear()
-        .domain([d3.min(data, (d) => d.year), d3.max(data, (d) => d.year)])
+        .domain([0, d3.max(data, (d) => d.x)])
         .range([margin.left, width - margin.right]);
 
       const yScale = d3
         .scaleLinear()
-        .domain([-20, 20])
+        .domain([0, d3.max(data, (d) => d.y)])
         .range([height - margin.bottom, margin.top]);
+
+      /********************************
+       * create area
+       * *******************************/
+
+      // area generator
+      const area = d3
+        .area()
+        .x((d) => xScale(d.x))
+        .y0(yScale(5))
+        .y1((d) => yScale(d.y));
+
+      console.log("area generator:  ", area);
+      console.log("area(data):  ", area(data));
+
+      svg
+        .append("path")
+        .datum(data)
+        .attr("class", "area")
+        .attr("d", area)
+        .attr("fill", "gray");
+
+      /***********************************
+       * scatter plot
+       ************************************/
+
+      svg
+        .selectAll("circle")
+        .data(data)
+        .enter()
+        .append("circle")
+        .attr("cx", (d) => xScale(d.x))
+        .attr("cy", (d) => yScale(d.y))
+        .attr("r", 5)
+        .attr("fill", (d) => d.color);
 
       /*********************************
        * create Axes
        *******************************/
       const xAxis = d3
         .axisBottom(xScale)
-        .tickValues(data.map((d) => d.year))
+        .tickValues(data.map((d) => d.x))
         .tickFormat(d3.format("d"));
 
-      const yAxis = d3.axisLeft(yScale).ticks(10); // 10 ticks
+      const yAxis = d3
+        .axisLeft(yScale)
+        .tickValues(data.map((d) => d.y))
+        .tickFormat(d3.format("d"));
 
       // add axes
       const xAxisGroup = svg
@@ -115,72 +131,12 @@
         .attr("text-anchor", "middle")
         .attr("transform", "rotate(-90)")
         .text("Y Values");
-
-      /*******************************
-       * horizontal line
-       *******************************/
-
-      const horizontalLine = svg
-        .append("line")
-        .attr(
-          "x1",
-          d3.min(data, (d) => xScale(d.year))
-        )
-        .attr("y1", yScale(0))
-        .attr(
-          "x2",
-          d3.max(data, (d) => xScale(d.year))
-        )
-        .attr("y2", yScale(0))
-        .attr("stroke", "orange")
-        .attr("stroke-width", 1);
-
-      /*********************************
-       * clipPath
-       * ******************************/
-
-      svg
-        .append("clipPath")
-        .attr("id", "positive-area")
-        .append("rect")
-        .attr("x", margin.left)
-        .attr("y", margin.top)
-        .attr("width", width - margin.left - margin.right)
-        .attr("height", yScale(0) - margin.top);
-
-      /********************************
-       * create area
-       * *******************************/
-      const area = d3
-        .area()
-        .defined((d) => d.value)
-        .x((d) => xScale(d.year))
-        .y0(yScale(0))
-        .y1((d) => yScale(d.value));
-
-      svg
-        .append("path")
-        .datum(data)
-        .attr("class", "area")
-        .attr("d", area)
-        .attr("fill", "blue");
-
-      // Positive Area (Red)
-      const positiveArea = d3
-        .area()
-        .defined((d) => d.value)
-        .x((d) => xScale(d.year))
-        .y0(yScale(0))
-        .y1((d) => yScale(d.value));
-
-      svg
-        .append("g")
-        .attr("clip-path", "url(#positive-area)")
-        .append("path")
-        .datum(data)
-        .attr("class", "positive-area")
-        .attr("d", positiveArea)
-        .attr("fill", "red");
     </script>
+
+    <h2>Reference</h2>
+    <ul>
+      <li><a href="https://d3js.org/d3-shape/area">area generator</a></li>
+      <li><a href="https://github.com/d3/d3-axis">axis</a></li>
+    </ul>
   </body>
 </html>
