@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>forcelayout example</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <h2>undirected graph</h2>
+    <div id="graph"></div>
+
+    <p>each node can be dragged.</p>
+    <p>press ctrl + shift + I to see the console</p>
+
+    <h2>Data</h2>
+    <div id="data"></div>
+
+    <h2>References</h2>
+    <ul>
+      <li><a href="https://d3js.org/d3-force">d3-force</a></li>
+      <li><a href="https://d3js.org/d3-drag">d3-drag</a></li>
+      <li><a href="https://d3js.org/d3-selection/events">events</a></li>
+      <li><a href="https://d3js.org/">D3.js Documentation</a></li>
+    </ul>
+
+    <script type="text/javascript">
+      /********************************
+       * dataset
+       ********************************/
+
+      const dataset = {
+        nodes: [{ name: "sunny" }, { name: "cloudy" }, { name: "rainy" }],
+        edges: [
+          { source: 0, target: 1 },
+          { source: 1, target: 2 },
+          { source: 2, target: 0 },
+        ],
+      };
+
+      console.log("dataset: ", dataset);
+
+      d3.select("div#data")
+        .append("pre")
+        .text(JSON.stringify(dataset, null, 2)); // indent with 2 spaces
+
+      /***************************
+       * create svg
+       **************************/
+
+      // Set up the dimensions of the chart
+      const width = 400;
+      const height = 400;
+
+      // Create an SVG element
+      const svg = d3
+        .select("div#graph")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .style("background-color", "pink");
+
+      /****************************
+       * create a simulation
+       ****************************/
+
+      const simulation = d3
+        .forceSimulation(dataset.nodes)
+        .force("charge", d3.forceManyBody())
+        .force("link", d3.forceLink(dataset.edges))
+        .force(
+          "center",
+          d3
+            .forceCenter()
+            .x(width / 2)
+            .y(height / 2)
+        )
+        .on("tick", tick);
+
+      console.log("simulation: ", simulation);
+
+      /*******************
+       *
+       * ***************/
+
+      function tick() {
+        edges
+          .attr("x1", function (d) {
+            return d.source.x;
+          })
+          .attr("y1", function (d) {
+            return d.source.y;
+          })
+          .attr("x2", function (d) {
+            return d.target.x;
+          })
+          .attr("y2", function (d) {
+            return d.target.y;
+          });
+
+        nodes
+          .attr("cx", function (d) {
+            return d.x;
+          })
+          .attr("cy", function (d) {
+            return d.y;
+          });
+      }
+
+      /************************
+       * scale
+       ***********************/
+
+      const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+      /*******************
+       * add edges and nodes to svg
+       *********************/
+
+      const edges = svg
+        .selectAll("line")
+        .data(dataset.edges)
+        .enter()
+        .append("line")
+        .style("stroke", "red")
+        .style("stroke-width", 1);
+      console.log("edges: ", edges);
+
+      const nodes = svg
+        .selectAll("circle")
+        .data(dataset.nodes)
+        .enter()
+        .append("circle")
+        .attr("r", 10)
+        .style("fill", (d, i) => colorScale(i))
+        .call(
+          d3
+            .drag()
+            .on("start", dragStarted)
+            .on("drag", dragging)
+            .on("end", dragEnded)
+        );
+      nodes.append("title").text((d) => d.name); // tooltip
+      console.log("nodes: ", nodes);
+
+      /*******************
+       * drag event functions
+       ***********************/
+
+      function dragStarted(event) {
+        /*
+        * D3 sets event.active to 1 during the transition, 
+        * and it becomes 0 once the transition is complete.
+        */
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
+        // output
+        console.log('*******************')
+        console.log('Dragging started')
+        console.log('event:', event)
+      }
+
+      function dragging(event) {
+        // event.active is 1
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
+      }
+
+      function dragEnded(event) {
+        if (!event.active) simulation.alphaTarget(0); // the simulation has stabilized
+        
+        event.subject.fx = null;
+        event.subject.fy = null;
+        // output
+        console.log('Drag ended')
+        console.log("event: ", event);
+        
+      }
+    </script>
+  </body>
+</html>
