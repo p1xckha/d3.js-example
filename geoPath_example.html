@@ -6,15 +6,34 @@
     <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
   </head>
   <body>
-    <h2>geoPath example</h2>
-    <div id="map"></div>
+    <h1>geoPath example</h1>
+
+    <h2>map</h2>
+    <div
+      id="map"
+      style="border-style: solid; width: 500px; height: 500px"
+    ></div>
+
+    <label
+      >scale=<span id="scale-value"></span>:
+      <input type="range" min="1" max="2000" id="scale" name="scale"
+    /></label>
+
+    <button id="reset">reset</button>
+
+<h2>features</h2>
+    <ul>
+      <li>This map is draggable</li>
+      <li>You can adjust scale by the slider</li>
+      <li>Tooltip is displayed when a mouse is on a country</li>
+    </ul>
 
     <h2>References</h2>
     <ul>
       <li><a href="https://d3js.org/d3-geo/path">geoPath</a></li>
       <li><a href="https://en.wikipedia.org/wiki/GeoJSON">GeoJSON</a></li>
       <li>
-        <a href="https://github.com/johan/world.geo.json/"
+        <a href="https://raw.githubusercontent.com/janasayantan/datageojson/"
           >sample geojson files</a
         >
       </li>
@@ -41,10 +60,13 @@
        *****************************/
       const projection = d3
         .geoMercator()
-        .scale(width / 2 / Math.PI)
+        .scale(width / 2 / Math.PI) // Scale to fit the map within the SVG
         .rotate([0, 0])
-        .center([0, 0])
-        .translate([width / 2, height / 2]);
+        .center([0, 0]) // (lon, lat) = (0, 0) is the center (default)
+        .translate([width / 2, height / 2]); // move (lon,lat)=(0,0) to the center of svg
+
+      let scale = projection.scale();
+      d3.select("#scale-value").text(scale.toFixed(1));
 
       /*******************************
        * Create a path generator
@@ -55,46 +77,122 @@
        * urls of geoJSON files
        * ****************************/
 
-      const usa =
-        "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/USA.geo.json";
-      const india =
-        "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/IND.geo.json";
-      const canada =
-        "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/CAN.geo.json";
-      const mexico =
-        "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/MEX.geo.json";
-      const china =
-        "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/CHN.geo.json";
-      const japan =
-        "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/JPN.geo.json";
-      const australia =
-        "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/AUS.geo.json";
+      const url =
+        "https://raw.githubusercontent.com/janasayantan/datageojson/master/world.json";
 
-      const countries = [usa, india, canada, mexico, china, japan, australia];
+      /*****************************
+       * create a draggable map
+       ********************************/
+
+      // define drag event functions
+      const dragStarted = function (event) {
+        console.log("dragging started");
+      };
+
+      const dragging = function (event) {
+        // get translation offset
+        const offset = projection.translate();
+        // update offset
+        offset[0] += event.dx;
+        offset[1] += event.dy;
+        projection.translate(offset);
+
+        //Update all paths and circles
+        svg.selectAll("path").attr("d", path);
+
+        svg
+          .selectAll("circle")
+          .attr("cx", function (d) {
+            return projection(d.coordinates)[0];
+          })
+          .attr("cy", function (d) {
+            return projection(d.coordinates)[1];
+          });
+      };
+
+      const dragEnded = function (event) {
+        console.log("dragging ended");
+        console.log("projection.translate():  ", projection.translate());
+        console.log("scale: ", projection.scale());
+      };
+
+      const drag = d3
+        .drag()
+        .on("start", dragStarted)
+        .on("drag", dragging)
+        .on("end", dragEnded);
+
+      // define draggable map
+      const map = svg.append("g").attr("id", "map").call(drag);
+      map
+        .append("rect")
+        .attr('id', 'sea')
+        .attr("width", width)
+        .attr("height", height)
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr('fill', 'lightblue')
 
       /********************************************
        * draw a map
        ******************************************/
-      countries.forEach((url) => {
-        d3.json(url).then((json) => {
-          // output
-          console.log(`downloaded ${url}`);
-          console.log("json.features", json.features);
 
-          // create a map for each country
-          svg
-            .append("g")
-            .selectAll("path")
-            .data(json.features)
-            .enter()
-            .append("path")
-            .attr("d", path)
-            .attr("fill", "lightblue")
-            .attr("stroke", "white")
-            .attr("stroke-width", 1)
-            .append("title") // tooltip
-            .text((d, i) => d.properties.name);
-        });
+      d3.json(url).then((json) => {
+        // output
+        console.log(`downloaded ${url}`);
+        console.log("json.features", json.features);
+
+        // create a map for each country
+        map
+          .append("g")
+          .attr('id', 'land')
+          .selectAll("path")
+          .data(json.features)
+          .enter()
+          .append("path")
+          .attr("d", path)
+          .attr("fill", "lightgreen")
+          .attr("stroke", "white")
+          .attr("stroke-width", 1)
+          .append("title") // tooltip
+          .text((d, i) => d.properties.name);
+      });
+
+      /*******************************************
+       * update function
+       ***********************************************/
+
+      function update() {
+        map.selectAll("path").attr("d", path);
+        map
+          .selectAll("circle")
+          .attr("cx", (d) => projection(d.coordinates)[0])
+          .attr("cy", (d) => projection(d.coordinates)[1]);
+        const scale = projection.scale();
+        d3.select("#scale-value").text(scale.toFixed(2));
+      }
+
+      /***********************
+       * add event listener to the slider
+       * ****************************/
+      d3.select("input#scale").on("input", function () {
+        // update scale
+        scale = this.value;
+        projection.scale([scale]);
+
+        // draw map again
+        update();
+      });
+
+      d3.select("button#reset").on("click", function () {
+        // reset
+        projection
+          .scale(width / 2 / Math.PI)
+          .rotate([0, 0])
+          .center([0, 0])
+          .translate([width / 2, height / 2]);
+        // draw map again
+        update();
       });
     </script>
   </body>

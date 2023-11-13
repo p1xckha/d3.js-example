@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>geoAlbersUsa example</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <h2>geoAlbersUsa example</h2>
+    <div
+      id="map"
+      style="border-style: solid; width: 800px; height: 600px"
+    ></div>
+
+    <div>scale=<span id="scale-value"></span></div>
+    <div>transform.k=<span id="transform-k"></span></div>
+
+    <p>equal area projection for USA.</p>
+
+    <ul>
+      <li>This map is draggable</li>
+      <li>You can adjust scale using the mouse wheel</li>
+      <li>Tooltip is displayed when a mouse is on a city</li>
+    </ul>
+
+    <h2>References</h2>
+    <ul>
+      <li>
+        <a href="https://d3js.org/d3-geo/conic#geoAlbersUsa">geoAlbersUsa</a>
+      </li>
+      <li><a href="https://d3js.org/d3-zoom">d3-zoom</a></li>
+      <li><a href="https://d3js.org/api">d3 api</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/GeoJSON">GeoJSON</a></li>
+      <li>
+        <a href="https://en.wikipedia.org/wiki/Albers_projection"
+          >Albers projection</a
+        >
+      </li>
+      <li>
+        <a href="https://github.com/johan/world.geo.json/"
+          >sample geojson files</a
+        >
+      </li>
+    </ul>
+
+    <script type="text/javascript">
+      /***************************
+       * create svg
+       **************************/
+
+      // Set up the dimensions of the chart
+      const width = 800;
+      const height = 600;
+
+      // Create an SVG element
+      const svg = d3
+        .select("div#map")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      /****************************
+       * map projection setup
+       *****************************/
+      // // Initial scale value
+      const initialScale = 1000;
+      d3.select("#scale-value").text(initialScale.toFixed(2));
+
+      // Initilize Albers USA projection
+      const projection = d3
+        .geoAlbersUsa()
+        .translate([width / 2, height / 2])
+        .scale([initialScale]);
+
+      console.log("projection: ", projection);
+
+      /*******************************
+       * Create a path generator
+       **********************************/
+      const path = d3.geoPath(projection);
+
+      /*****************************
+       * event functions for zoom (and drag)
+       ********************************/
+      const zoomStarted = function (event) {
+        console.log("zoom started.");
+        console.log("event: ", event);
+      };
+
+      var zooming = function (event) {
+        //New offset array
+        var offset = [event.transform.x, event.transform.y];
+
+        //Calculate new scale
+        var newScale = event.transform.k * initialScale;
+
+        //Update projection with new offset and scale
+        projection.translate(offset).scale(newScale);
+
+        //Update all paths and circles
+        svg.selectAll("path").attr("d", path);
+
+        svg
+          .selectAll("circle")
+          .attr("cx", function (d) {
+            return projection(d.coordinates)[0];
+          })
+          .attr("cy", function (d) {
+            return projection(d.coordinates)[1];
+          });
+
+        // display current scale on the page
+        d3.select("#scale-value").text(projection.scale().toFixed(2));
+
+        //display transform.k on the page
+        d3.select("#transform-k").text(event.transform.k);
+      };
+
+      const zoomEnded = function (event) {
+        console.log("zoom ended");
+        //output
+        console.log("event: ", event);
+      };
+
+      // Define the zoom behavior
+      var zoom = d3
+        .zoom()
+        .on("start", zoomStarted)
+        .on("zoom", zooming)
+        .on("end", zoomEnded);
+
+      // create a draggable and zoomable map
+      const map = svg.append("g").attr("id", "map");
+      map
+        .call(zoom)
+        .call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 2));
+
+      // Make the map zoomable even if mouse is on the sea
+      map
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", width)
+        .attr("height", height)
+        .attr("opacity", 0);
+
+      /*******************************
+       * urls of geoJSON files
+       * ****************************/
+
+      const url =
+        "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/USA.geo.json";
+
+      /***************************************:
+       * cities
+       ****************************************/
+
+      // List of cities with their latitude and longitude
+      const cities = [
+        { name: "New York", coordinates: [-74.006, 40.7128] },
+        { name: "Los Angeles", coordinates: [-118.2437, 34.0522] },
+        { name: "Chicago", coordinates: [-87.6298, 41.8781] },
+        { name: "Houston", coordinates: [-95.3698, 29.7604] },
+        { name: "Phoenix", coordinates: [-112.074, 33.4484] },
+        { name: "Philadelphia", coordinates: [-75.1652, 39.9526] },
+        { name: "San Antonio", coordinates: [-98.4936, 29.4241] },
+        { name: "San Diego", coordinates: [-117.1611, 32.7157] },
+        { name: "Dallas", coordinates: [-96.7969, 32.7767] },
+        { name: "San Jose", coordinates: [-121.8863, 37.3382] },
+        { name: "Austin", coordinates: [-97.7431, 30.25] },
+        { name: "Jacksonville", coordinates: [-81.6557, 30.3322] },
+        { name: "San Francisco", coordinates: [-122.4194, 37.7749] },
+        { name: "Columbus", coordinates: [-82.9988, 39.9612] },
+        { name: "Indianapolis", coordinates: [-86.1581, 39.7684] },
+        { name: "Seattle", coordinates: [-122.3321, 47.6062] },
+        { name: "Denver", coordinates: [-104.9903, 39.7392] },
+        { name: "Washington, D.C.", coordinates: [-77.0369, 38.8951] },
+        { name: "Boston", coordinates: [-71.0589, 42.3601] },
+        { name: "Miami", coordinates: [-80.1918, 25.7617] },
+        { name: "Honolulu", coordinates: [-157.8583, 21.3069] },
+        { name: "Anchorage", coordinates: [-149.9003, 61.2181] },
+      ];
+
+      /********************************************
+       * draw a map
+       ******************************************/
+
+      d3.json(url).then((json) => {
+        // output
+        console.log(`downloaded ${url}`);
+        console.log("json.features", json.features);
+        // create a map of the US
+        map
+          .append("g")
+          .selectAll("path")
+          .data(json.features)
+          .enter()
+          .append("path")
+          .attr("d", path)
+          .attr("fill", "lightgreen")
+          .attr("stroke", "white")
+          .attr("stroke-width", 1)
+          .append("title") // tooltip
+          .text((d, i) => d.properties.name);
+
+        // scatter plot the states
+        map
+          .selectAll("circle")
+          .data(cities)
+          .enter()
+          .append("circle")
+          .attr("cx", (d) => projection(d.coordinates)[0])
+          .attr("cy", (d) => projection(d.coordinates)[1])
+          .attr("r", 5)
+          .attr("fill", "red")
+          .attr("stroke", "white")
+          .append("title")
+          .text((d) => d.name);
+      });
+    </script>
+  </body>
+</html>
