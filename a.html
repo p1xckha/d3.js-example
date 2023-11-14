@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>pie chart example</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      const width = 300;
+      const height = 300;
+      // Assuming you have an SVG container with a specified width and height
+      var svg = d3
+        .select("body") // You can replace "body" with the ID or class of your SVG container
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // Define the control points for the Bezier curve
+      var controlPoints = [
+        { x: 10, y: 90 },
+        { x: 30, y: 90 },
+        { x: 25, y: 10 },
+        { x: 50, y: 10 },
+        { x: 70, y: 90 },
+        { x: 90, y: 90 },
+      ];
+
+      // Create a line generator and set the curve to be a cardinal curve
+      var lineGenerator = d3
+        .line()
+        .x(function (d) {
+          return d.x;
+        })
+        .y(function (d) {
+          return d.y;
+        })
+        .curve(d3.curveCardinal);
+
+      // Generate the path data
+      var pathData = lineGenerator(controlPoints);
+
+      // Create the path element and set attributes
+      svg
+        .append("path")
+        .attr("fill", "none")
+        .attr("stroke", "red")
+        .attr("d", pathData);
+    </script>
+  </body>
+</html>

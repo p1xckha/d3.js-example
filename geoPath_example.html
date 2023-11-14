@@ -16,12 +16,12 @@
 
     <label
       >scale=<span id="scale-value"></span>:
-      <input type="range" min="1" max="2000" id="scale" name="scale"
+      <input type="range" min="1" max="1000" id="scale" name="scale"
     /></label>
 
     <button id="reset">reset</button>
 
-<h2>features</h2>
+    <h2>features</h2>
     <ul>
       <li>This map is draggable</li>
       <li>You can adjust scale by the slider</li>
@@ -66,7 +66,8 @@
         .translate([width / 2, height / 2]); // move (lon,lat)=(0,0) to the center of svg
 
       let scale = projection.scale();
-      d3.select("#scale-value").text(scale.toFixed(1));
+      d3.select("span#scale-value").text(scale.toFixed(1));
+      d3.select("input#scale").property("value", scale.toFixed(1));
 
       /*******************************
        * Create a path generator
@@ -126,12 +127,12 @@
       const map = svg.append("g").attr("id", "map").call(drag);
       map
         .append("rect")
-        .attr('id', 'sea')
+        .attr("id", "sea")
         .attr("width", width)
         .attr("height", height)
         .attr("x", 0)
         .attr("y", 0)
-        .attr('fill', 'lightblue')
+        .attr("fill", "lightblue");
 
       /********************************************
        * draw a map
@@ -145,7 +146,7 @@
         // create a map for each country
         map
           .append("g")
-          .attr('id', 'land')
+          .attr("id", "land")
           .selectAll("path")
           .data(json.features)
           .enter()
@@ -172,13 +173,13 @@
         d3.select("#scale-value").text(scale.toFixed(2));
       }
 
-      /***********************
+      /*******************************
        * add event listener to the slider
        * ****************************/
       d3.select("input#scale").on("input", function () {
         // update scale
         scale = this.value;
-        projection.scale([scale]);
+        projection.scale(scale);
 
         // draw map again
         update();
@@ -191,8 +192,14 @@
           .rotate([0, 0])
           .center([0, 0])
           .translate([width / 2, height / 2]);
+
         // draw map again
         update();
+
+        // update input value
+        const scale = projection.scale();
+        d3.select("span#scale-value").text(scale.toFixed(1));
+        d3.select("input#scale").property("value", scale.toFixed(1));
       });
     </script>
   </body>

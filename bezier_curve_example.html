@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bezier Curve Example</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <h1>Bezier Curve Example</h1>
+    <h2>graph</h2>
+    <div id="image"></div>
+
+    <h2>References</h2>
+    <ul>
+      <li><a href="https://d3js.org/d3-path">d3-path</a></li>
+      <li>
+        <a href="https://observablehq.com/@d3/d3-path">d3-path observable</a>
+      </li>
+      <li>
+        <a
+          href="https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/d#path_commands"
+          >path element in svg</a
+        >
+      </li>
+    </ul>
+
+    <script type="text/javascript">
+      /******************************************
+       * draw a Cubic Bézier Curve using d3.path
+       ****************************************/
+
+      const width = 300;
+      const height = 300;
+
+      // Assuming you have an SVG container with a specified width and height
+      const svg = d3
+        .select("div#image") // You can replace "body" with the ID or class of your SVG container
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // Add background color to the SVG container
+      svg
+        .append("rect")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("fill", "#f0f0f0"); // Choose the background color you prefer
+
+      const path = d3.path();
+
+      // Move to the starting point
+      function drawBezierCurve(context, moveToArgs, bezierCurveToArgs) {
+        if (moveToArgs != null) {
+          context.moveTo(moveToArgs.x, moveToArgs.y);
+        }
+        context.bezierCurveTo(
+          bezierCurveToArgs.cpx1,
+          bezierCurveToArgs.cpy1,
+          bezierCurveToArgs.cpx2,
+          bezierCurveToArgs.cpy2,
+          bezierCurveToArgs.x,
+          bezierCurveToArgs.y
+        );
+      }
+
+      const startPoint1 = { x: 3 * 10, y: 3 * 90 };
+      const curve1 = {
+        cpx1: 30 * 3,
+        cpy1: 90 * 3,
+        cpx2: 25 * 3,
+        cpy2: 10 * 3,
+        x: 50 * 3,
+        y: 10 * 3,
+      };
+
+      drawBezierCurve(path, startPoint1, curve1);
+
+      // Draw the next segment with a shorthand Bezier curve
+      const curve2 = {
+        cpx1: 75 * 3,
+        cpy1: 10 * 3,
+        cpx2: 70 * 3,
+        cpy2: 90 * 3,
+        x: 90 * 3,
+        y: 90 * 3,
+      };
+
+      const startPoint2 = {x: curve1.x, y: curve1.y}
+      drawBezierCurve(path, null, curve2);
+
+      svg
+        .append("path")
+        .attr("d", path.toString())
+        .attr("class", "bezier-curve")
+        .attr("fill", "none")
+        .attr("stroke", "red")
+        .attr("stroke-width", 1);
+
+      /*********************
+       * scatter plot
+       ***********************/
+
+      function drawControlPoint(point, label) {
+        svg
+          .append("circle")
+          .attr("cx", point.x)
+          .attr("cy", point.y)
+          .attr("r", 5)
+          .append("title")
+          .text(label);
+      }
+
+      // Draw control points for curve1
+      drawControlPoint({ x: startPoint1.x, y: startPoint1.y }, "start point of curve1");
+      drawControlPoint({ x: curve1.cpx1, y: curve1.cpy1 }, "control point1 of curve1");
+      drawControlPoint({ x: curve1.cpx2, y: curve1.cpy2 }, "control point2 of curve1");
+      drawControlPoint({ x: curve1.x, y: curve1.y }, "end point of curve1");
+
+      // Draw control points for curve2
+      drawControlPoint({ x: curve2.cpx1, y: curve2.cpy1 }, "control point1 of curve2");
+      drawControlPoint({ x: curve2.cpx2, y: curve2.cpy2 }, "control point2 of curve2");
+      drawControlPoint({ x: curve2.x, y: curve2.y }, "end point of curve2");
+
+
+       /************************
+       Draw straight lines
+       ************************/
+
+      // Curve 1
+      svg
+        .append("line")
+        .attr("x1", startPoint1.x)
+        .attr("y1", startPoint1.y)
+        .attr("x2", curve1.cpx1)
+        .attr("y2", curve1.cpy1)
+        .attr("stroke", "gray")
+        .attr("stroke-width", 1);
+
+      svg
+        .append("line")
+        .attr("x1", curve1.x)
+        .attr("y1", curve1.y)
+        .attr("x2", curve1.cpx2)
+        .attr("y2", curve1.cpy2)
+        .attr("stroke", "gray")
+        .attr("stroke-width", 1);
+
+      // Curve 2
+      svg
+        .append("line")
+        .attr("x1", startPoint2.x)
+        .attr("y1", startPoint2.y)
+        .attr("x2", curve2.cpx1)
+        .attr("y2", curve2.cpy1)
+        .attr("stroke", "gray")
+        .attr("stroke-width", 1);
+
+      svg
+        .append("line")
+        .attr("x1", curve2.x)
+        .attr("y1", curve2.y)
+        .attr("x2", curve2.cpx2)
+        .attr("y2", curve2.cpy2)
+        .attr("stroke", "gray")
+        .attr("stroke-width", 1);
+
+
+
+
+    </script>
+  </body>
+</html>

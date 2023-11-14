@@ -14,13 +14,14 @@
 
     <div>scale=<span id="scale-value"></span></div>
     <div>transform.k=<span id="transform-k"></span></div>
+    <button id="reset">reset</button>
 
     <p>equal area projection for USA.</p>
 
     <ul>
       <li>This map is draggable</li>
       <li>You can adjust scale using the mouse wheel</li>
-      <li>Tooltip is displayed when a mouse is on a city</li>
+      <li>Tooltip is displayed when the mouse is on a city</li>
     </ul>
 
     <h2>References</h2>
@@ -41,6 +42,7 @@
           >sample geojson files</a
         >
       </li>
+      <li><a href="https://d3js.org/d3-dispatch#dispatch_call">call</a></li>
     </ul>
 
     <script type="text/javascript">
@@ -62,15 +64,12 @@
       /****************************
        * map projection setup
        *****************************/
-      // // Initial scale value
+      // Initial scale value
       const initialScale = 1000;
       d3.select("#scale-value").text(initialScale.toFixed(2));
 
       // Initilize Albers USA projection
-      const projection = d3
-        .geoAlbersUsa()
-        .translate([width / 2, height / 2])
-        .scale([initialScale]);
+      const projection = d3.geoAlbersUsa();
 
       console.log("projection: ", projection);
 
@@ -79,9 +78,9 @@
        **********************************/
       const path = d3.geoPath(projection);
 
-      /*****************************
+      /***************************************
        * event functions for zoom (and drag)
-       ********************************/
+       *************************************/
       const zoomStarted = function (event) {
         console.log("zoom started.");
         console.log("event: ", event);
@@ -95,7 +94,7 @@
         var newScale = event.transform.k * initialScale;
 
         //Update projection with new offset and scale
-        projection.translate(offset).scale(newScale);
+        projection.translate(offset).scale(newScale); // projection.scale and zoom.scale are different
 
         //Update all paths and circles
         svg.selectAll("path").attr("d", path);
@@ -120,20 +119,30 @@
         console.log("zoom ended");
         //output
         console.log("event: ", event);
+        
       };
 
-      // Define the zoom behavior
+      /*****************************
+       * Define the zoom behavior
+       ***************************/
       var zoom = d3
         .zoom()
+        .scaleExtent([0.1, 10]) 
+        .translateExtent([[-width, -height], [width, height] ])
         .on("start", zoomStarted)
         .on("zoom", zooming)
         .on("end", zoomEnded);
 
-      // create a draggable and zoomable map
+      console.log('zoom: ', zoom)
+
+      /*****************************************
+       * create a draggable and zoomable map
+       ***************************************/
       const map = svg.append("g").attr("id", "map");
-      map
-        .call(zoom)
-        .call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 2));
+      map.call(zoom)
+
+      console.log('applying initial transform')
+      map.call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 2).scale(1)); // initial transform
 
       // Make the map zoomable even if mouse is on the sea
       map
@@ -143,6 +152,17 @@
         .attr("width", width)
         .attr("height", height)
         .attr("opacity", 0);
+
+      /**********************
+       * reset
+       *********************/
+      d3.select("#reset").on("click", function () {
+        console.log('reset button is pressed')
+        map.call(
+          zoom.transform,
+          d3.zoomIdentity.translate(width / 2, height / 2)
+        );
+      });
 
       /*******************************
        * urls of geoJSON files
