@@ -3,12 +3,25 @@
   <head>
     <meta charset="utf-8" />
     <title>Bezier Curve Example</title>
+    <style>
+      /* Add a CSS rule to make the circle yellow on hover 
+      .control-point:hover {
+        fill: yellow;
+
+      }
+      */
+    </style>
     <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
   </head>
   <body>
     <h1>Bezier Curve Example</h1>
     <h2>graph</h2>
     <div id="image"></div>
+
+    <p>
+      You can edit a curve by dragging a control point in gray, as if you were
+      using a vector graphics editor.
+    </p>
 
     <h2>References</h2>
     <ul>
@@ -46,7 +59,8 @@
         .attr("height", height)
         .attr("fill", "#f0f0f0"); // Choose the background color you prefer
 
-      const path = d3.path();
+      const path1 = d3.path();
+      const path2 = d3.path();
 
       // Move to the starting point
       function drawBezierCurve(context, moveToArgs, bezierCurveToArgs) {
@@ -73,7 +87,7 @@
         y: 10 * 3,
       };
 
-      drawBezierCurve(path, startPoint1, curve1);
+      drawBezierCurve(path1, startPoint1, curve1);
 
       // Draw the next segment with a shorthand Bezier curve
       const curve2 = {
@@ -85,12 +99,16 @@
         y: 90 * 3,
       };
 
-      const startPoint2 = {x: curve1.x, y: curve1.y}
-      drawBezierCurve(path, null, curve2);
+      const startPoint2 = { x: curve1.x, y: curve1.y };
+      drawBezierCurve(path2, startPoint2, curve2);
 
       svg
+        .selectAll("path")
+        .data([path1, path2])
+        .enter()
         .append("path")
-        .attr("d", path.toString())
+        .attr("id", (path, i) => "bezier-curve" + (i + 1))
+        .attr("d", (path) => path.toString())
         .attr("class", "bezier-curve")
         .attr("fill", "none")
         .attr("stroke", "red")
@@ -101,34 +119,66 @@
        ***********************/
 
       function drawControlPoint(point, label) {
-        svg
+        const circle = svg
           .append("circle")
           .attr("cx", point.x)
           .attr("cy", point.y)
-          .attr("r", 5)
-          .append("title")
-          .text(label);
+          .attr("r", 5);
+
+        circle.append("title").text(label);
+
+        return circle;
       }
 
       // Draw control points for curve1
-      drawControlPoint({ x: startPoint1.x, y: startPoint1.y }, "start point of curve1");
-      drawControlPoint({ x: curve1.cpx1, y: curve1.cpy1 }, "control point1 of curve1");
-      drawControlPoint({ x: curve1.cpx2, y: curve1.cpy2 }, "control point2 of curve1");
+      drawControlPoint(
+        { x: startPoint1.x, y: startPoint1.y },
+        "start point of curve1"
+      );
+
+      const cp1c1 = drawControlPoint(
+        { x: curve1.cpx1, y: curve1.cpy1 },
+        "control point1 of curve1"
+      );
+
+      const cp2c1 = drawControlPoint(
+        { x: curve1.cpx2, y: curve1.cpy2 },
+        "control point2 of curve1"
+      );
       drawControlPoint({ x: curve1.x, y: curve1.y }, "end point of curve1");
 
+      // set class and id
+      cp1c1.attr("id", "cp1c1").attr("class", "control-point");
+      cp2c1.attr("id", "cp2c1").attr("class", "control-point");
+
       // Draw control points for curve2
-      drawControlPoint({ x: curve2.cpx1, y: curve2.cpy1 }, "control point1 of curve2");
-      drawControlPoint({ x: curve2.cpx2, y: curve2.cpy2 }, "control point2 of curve2");
+      const cp1c2 = drawControlPoint(
+        { x: curve2.cpx1, y: curve2.cpy1 },
+        "control point1 of curve2"
+      );
+
+      const cp2c2 = drawControlPoint(
+        { x: curve2.cpx2, y: curve2.cpy2 },
+        "control point2 of curve2"
+      );
       drawControlPoint({ x: curve2.x, y: curve2.y }, "end point of curve2");
 
+      // set ids and classes
+      cp1c2.attr("id", "cp1c2").attr("class", "control-point");
+      cp2c2.attr("id", "cp2c2").attr("class", "control-point");
 
-       /************************
+      // make control points gray
+      d3.selectAll("circle.control-point").attr("fill", "gray");
+
+      /************************
        Draw straight lines
        ************************/
 
       // Curve 1
-      svg
+      const lineCtrl1Curve1 = svg
         .append("line")
+        .attr("id", "ctrl1-curve1")
+        .attr("class", "ctr1 curve1")
         .attr("x1", startPoint1.x)
         .attr("y1", startPoint1.y)
         .attr("x2", curve1.cpx1)
@@ -136,8 +186,9 @@
         .attr("stroke", "gray")
         .attr("stroke-width", 1);
 
-      svg
+      const lineCtrl2Curve1 = svg
         .append("line")
+        .attr("id", "ctrl2-curve1")
         .attr("x1", curve1.x)
         .attr("y1", curve1.y)
         .attr("x2", curve1.cpx2)
@@ -146,7 +197,7 @@
         .attr("stroke-width", 1);
 
       // Curve 2
-      svg
+      const lineCtrl1Curve2 = svg
         .append("line")
         .attr("x1", startPoint2.x)
         .attr("y1", startPoint2.y)
@@ -155,7 +206,7 @@
         .attr("stroke", "gray")
         .attr("stroke-width", 1);
 
-      svg
+      const lineCtrl2Curve2 = svg
         .append("line")
         .attr("x1", curve2.x)
         .attr("y1", curve2.y)
@@ -164,9 +215,65 @@
         .attr("stroke", "gray")
         .attr("stroke-width", 1);
 
+      /************
+       * drag behavior
+       * *************/
 
+      const drag = d3.drag().on("drag", function (event, d) {
+        // new position
+        const newX = event.x;
+        const newY = event.y;
 
+        // id
+        const id = d3.select(this).attr("id");
 
+        // update the control point
+        d3.select(this).attr("cx", newX).attr("cy", newY);
+
+        // update the line
+        const path = d3.path();
+        switch (id) {
+          case "cp1c1":
+            curve1.cpx1 = newX;
+            curve1.cpy1 = newY;
+
+            drawBezierCurve(path, startPoint1, curve1);
+            d3.select("path#bezier-curve1").attr("d", path.toString());
+            lineCtrl1Curve1.attr("x2", newX).attr("y2", newY);
+
+            break;
+          case "cp2c1":
+            curve1.cpx2 = newX;
+            curve1.cpy2 = newY;
+
+            drawBezierCurve(path, startPoint1, curve1);
+            d3.select("path#bezier-curve1").attr("d", path.toString());
+            lineCtrl2Curve1.attr("x2", newX).attr("y2", newY);
+
+            break;
+
+          case "cp1c2":
+            curve2.cpx1 = newX;
+            curve2.cpy1 = newY;
+
+            drawBezierCurve(path, startPoint2, curve2);
+            d3.select("path#bezier-curve2").attr("d", path.toString());
+            lineCtrl1Curve2.attr("x2", newX).attr("y2", newY);
+
+            break;
+          case "cp2c2":
+            curve2.cpx2 = newX;
+            curve2.cpy2 = newY;
+
+            drawBezierCurve(path, startPoint2, curve2);
+            d3.select("path#bezier-curve2").attr("d", path.toString());
+            lineCtrl2Curve2.attr("x2", newX).attr("y2", newY);
+
+            break;
+        }
+      });
+
+      d3.selectAll(".control-point").call(drag);
     </script>
   </body>
 </html>
