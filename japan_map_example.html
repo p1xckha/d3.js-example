@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>TopoJSON Example</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v7.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+  </head>
+  <body>
+    <h2>Japan's total fertility rates by prefecture in 2022</h2>
+    <p>
+      Use a local server (e.g., VSCode with the Live Server extension) to read this file.
+    </p>
+    <div id="map"></div>
+
+    <h2>features</h2>
+    <ul>
+      <li>you can zoom and drag the map using the mouse</li>
+      <li>each prefecture is colored according to its fertility rate</li>
+      <li>fertility rate is displayed as a tooptip</li>
+    </ul>
+
+    <h2>References</h2>
+
+    <ul id="ref">
+      <li>
+        <a href="https://mapshaper.org/">Mapshaper</a> (convert a shapefile into
+        a TopoJSON, GeoJSON, etc.)
+      </li>
+      <li>
+        <a
+          href="https://github.com/topojson/topojson-client/blob/master/README.md#feature"
+          >TopoJSON</a
+        >
+      </li>
+      <li>
+        <a href="https://data.humdata.org/dataset/cod-ab-jpn">Japan map</a>
+      </li>
+      <li>
+        <a href="https://www.mhlw.go.jp/toukei/saikin/hw/jinkou/kakutei22/"
+          >japan's total fertility rates by prefectures in 2022</a
+        >
+      </li>
+      <li>
+        <a href="https://en.wikipedia.org/wiki/Total_fertility_rate"
+          >Total fertility rate</a
+        >
+      </li>
+    </ul>
+
+    <script type="text/javascript">
+      /***************************
+       * Create SVG
+       **************************/
+
+      // Set up the dimensions of the chart
+      const width = 800;
+      const height = 800;
+
+      // Create an SVG element
+      const svg = d3
+        .select("div#map")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      /****************************
+       * Map projection setup
+       *****************************/
+      const initialScale = 1500;
+      const projection = d3.geoMercator().center([135, 35]); // []
+
+      console.log("Projection: ", projection);
+
+      /*******************************
+       * Create a path generator
+       **********************************/
+      const geoPath = d3.geoPath(projection);
+
+      // Log
+      console.log("TopoJSON library: ", topojson);
+
+      /*************************************
+       * remove diacritics (accents) from characters
+       **************************************/
+
+      // for example, convert ō into o
+      function removeDiacritics(inputString) {
+        return inputString.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      }
+
+      /**************************
+       * draw japan map
+       * *************************/
+
+      // Create Map group
+      const map = svg.append("g").attr("id", "map");
+
+      // Sea
+      map
+        .append("rect")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("fill", "lightblue")
+        .attr("opacity", 0.5);
+
+      // filepaths
+      const filePath = "json/jpn_admbnd.json"; // topojson file
+      const fertilityRateFilePath = "csv/japan_birth_rate_2022.csv";
+
+      /*********************************
+       * start reading the topoJSON file
+       ********************************/
+
+      d3.json(filePath).then(function (world) {
+        // Convert TopoJSON into GeoJSON
+        const geoJSON = topojson.feature(
+          world,
+          world.objects.jpn_admbnda_adm1_2019
+        );
+        // Log
+        console.log("TopoJSON:", world);
+        console.log("GeoJSON: ", geoJSON);
+
+        // read birth rates & add them to geoJSON
+        d3.csv(fertilityRateFilePath)
+          .then(function (fertilityRateData) {
+            // if we have successfully read the csv
+            let data = fertilityRateData;
+
+            // Add fertility rates
+            for (let j = 0; j < geoJSON.features.length; j++) {
+              const prefectureJSON = removeDiacritics(
+                geoJSON.features[j].properties.ADM1_EN.trim()
+              );
+              geoJSON.features[j].properties.ADM1_EN = prefectureJSON;
+              for (let i = 0; i < data.length; i++) {
+                const prefectureCSV = removeDiacritics(
+                  data[i].prefecture.trim()
+                );
+                if (prefectureJSON == prefectureCSV) {
+                  console.log(
+                    `adding fertilityRate "${data[i].prefecture} ${data[i].fertilityRate}" to geoJSON`
+                  );
+                  geoJSON.features[j].properties.fertilityRate = parseFloat(
+                    data[i].fertilityRate
+                  ); // header of csv should not have a white space
+                  break;
+                }
+              }
+            }
+            // log
+            console.log("modified geoJSON: ", geoJSON);
+
+            /*************************************************
+             * Create the map
+             ************************************************************/
+
+            // Now that we have added fertilityRates to geoJSON, display them in color on the map
+            let fertilityRateExtent = d3.extent(
+              geoJSON.features,
+              (feature) => feature.properties.fertilityRate
+            );
+            const colorScale = d3
+              .scaleLinear()
+              .domain(fertilityRateExtent)
+              .range(["blue", "red"]);
+
+            // log
+            console.log("fertilityRateExtent: ", fertilityRateExtent);
+
+            // Draw the map
+            map
+              .selectAll("path")
+              .data(geoJSON.features)
+              .enter()
+              .append("path")
+              .attr("d", geoPath)
+              .attr("class", "prefecture")
+              .attr("stroke", "black")
+              .attr("stroke-width", 0.5)
+              .attr("fill", (feature) =>
+                colorScale(feature.properties.fertilityRate)
+              )
+              .append("title") // tooltip
+              .text(
+                (d) => d.properties.ADM1_EN + ": " + d.properties.fertilityRate
+              );
+          })
+          .catch(function (error) {
+            console.error("Error loading JSON:", error);
+          });
+      }); // finished reading the topoJSON file
+
+      /******************
+       * Define zoom behavior
+       **********************/
+
+      const zoom = d3.zoom().scaleExtent([0.5, 5]).on("zoom", zooming);
+
+      function zooming(event) {
+        const offset = [event.transform.x, event.transform.y];
+        const newScale = event.transform.k * initialScale;
+        projection.translate(offset).scale(newScale);
+        map.selectAll("path").attr("d", geoPath);
+      }
+
+      // call zoom function
+      map.call(zoom);
+
+      // initial transform
+      map.call(
+        zoom.transform,
+        d3.zoomIdentity.translate(width / 2, height / 2).scale(1)
+      );
+    </script>
+  </body>
+</html>
