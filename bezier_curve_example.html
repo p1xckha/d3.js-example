@@ -15,7 +15,7 @@
   </head>
   <body>
     <h1>Bezier Curve Example</h1>
-    <h2>graph</h2>
+    <h2>SVG image</h2>
     <div id="image"></div>
 
     <p>
@@ -42,8 +42,8 @@
        * draw a Cubic Bézier Curve using d3.path
        ****************************************/
 
-      const width = 300;
-      const height = 300;
+      const width = 500;
+      const height = 500;
 
       // Assuming you have an SVG container with a specified width and height
       const svg = d3
@@ -77,26 +77,26 @@
         );
       }
 
-      const startPoint1 = { x: 3 * 10, y: 3 * 90 };
+      const startPoint1 = { x: 5 * 10, y: 5 * 90 };
       const curve1 = {
-        cpx1: 30 * 3,
-        cpy1: 90 * 3,
-        cpx2: 25 * 3,
-        cpy2: 10 * 3,
-        x: 50 * 3,
-        y: 10 * 3,
+        cpx1: 30 * 5,
+        cpy1: 90 * 5,
+        cpx2: 25 * 5,
+        cpy2: 10 * 5,
+        x: 50 * 5,
+        y: 10 * 5,
       };
 
       drawBezierCurve(path1, startPoint1, curve1);
 
       // Draw the next segment with a shorthand Bezier curve
       const curve2 = {
-        cpx1: 75 * 3,
-        cpy1: 10 * 3,
-        cpx2: 70 * 3,
-        cpy2: 90 * 3,
-        x: 90 * 3,
-        y: 90 * 3,
+        cpx1: 75 * 5,
+        cpy1: 10 * 5,
+        cpx2: 70 * 5,
+        cpy2: 90 *5,
+        x: 90 * 5,
+        y: 90 * 5,
       };
 
       const startPoint2 = { x: curve1.x, y: curve1.y };

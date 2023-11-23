@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>TopoJSON Example</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v7.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+  </head>
+  <body>
+    <h2>Map</h2>
+    <div id="map"></div>
+
+    <h2>References</h2>
+
+    <ul id="ref">
+      <li>
+        <a href="https://mapshaper.org/">Mapshaper</a> (convert a shapefile into
+        a TopoJSON, GeoJSON, etc.)
+      </li>
+      <li>
+        <a
+          href="https://github.com/topojson/topojson-client/blob/master/README.md#feature"
+          >TopoJSON</a
+        >
+      </li>
+      <li>
+        <a href="https://www.naturalearthdata.com/">Natural Earth - Free vector and raster map data at 1:10m, 1:50m, and 1:110m scales</a>
+      </li>
+    </ul>
+
+    <script type="text/javascript">
+      /***************************
+       * Create SVG
+       **************************/
+
+      // Set up the dimensions of the chart
+      const width = 800;
+      const height = 600;
+
+      // Create an SVG element
+      const svg = d3
+        .select("div#map")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      /****************************
+       * Map projection setup
+       *****************************/
+      const initialScale = (width / (2 * Math.PI)) * 2;
+      const projection = d3.geoMercator().scale(initialScale);
+      console.log("Projection: ", projection);
+
+      /*******************************
+       * Create a path generator
+       **********************************/
+      const geoPath = d3.geoPath(projection);
+
+      // Log
+      console.log("TopoJSON library: ", topojson);
+
+      // Map
+      const filePath = "json/topojson_ne_110m_ocean.json";
+      d3.json(filePath)
+        .then(function (world) {
+          // Convert TopoJSON into GeoJSON
+          const geoJSON = topojson.feature(world, world.objects.ne_110m_ocean);
+          // Log
+          console.log("TopoJSON:", world);
+          console.log("GeoJSON: ", geoJSON);
+
+          // Draw the map
+          svg
+            .selectAll("path")
+            .data(geoJSON.features)
+            .enter()
+            .append("path")
+            .attr("d", geoPath)
+            .attr("class", "world")
+            .attr("fill", "lightgreen")
+            .append("title")
+            .text("World");
+        })
+        .catch(function (error) {
+          console.error("Error loading JSON:", error);
+        });
+
+      /************************
+       * Draw lines
+       *********************/
+      const lineData = [
+        {
+          coordinates: [
+            [0, -70],
+            [0, 70],
+          ],
+          label: "Prime Meridian",
+        },
+        {
+          coordinates: [
+            [-180, 0],
+            [180, 0],
+          ],
+          label: "Equator",
+        },
+      ];
+
+      svg
+        .selectAll("line")
+        .data(lineData)
+        .enter()
+        .append("line")
+        .attr("x1", (d) => projection(d.coordinates[0])[0])
+        .attr("y1", (d) => projection(d.coordinates[0])[1])
+        .attr("x2", (d) => projection(d.coordinates[1])[0])
+        .attr("y2", (d) => projection(d.coordinates[1])[1])
+        .attr("stroke", (d, i) => (i === 1 ? "red" : "yellow"))
+        .attr("stroke-width", 2)
+        .append("title")
+        .text((d) => d.label);
+    </script>
+  </body>
+</html>
