@@ -2,14 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>TopoJSON Example</title>
+    <title>Japan's total fertility rates by prefecture in 2022</title>
     <script type="text/javascript" src="https://d3js.org/d3.v7.js"></script>
     <script src="https://unpkg.com/topojson@3"></script>
   </head>
   <body>
     <h2>Japan's total fertility rates by prefecture in 2022</h2>
     <p>
-      Use a local server (e.g., VSCode with the Live Server extension) to read this file.
+      Use a local server (e.g., VSCode with the Live Server extension) to read
+      this file.
     </p>
     <div id="map"></div>
 
@@ -105,8 +106,8 @@
         .attr("opacity", 0.5);
 
       // filepaths
-      const filePath = "json/jpn_admbnd.json"; // topojson file
-      const fertilityRateFilePath = "csv/japan_birth_rate_2022.csv";
+      const filePath = "data/jpn_admbnd.json"; // topojson file
+      const fertilityRateFilePath = "data/japan_fertility_rate_2022.csv";
 
       /*********************************
        * start reading the topoJSON file
@@ -122,7 +123,7 @@
         console.log("TopoJSON:", world);
         console.log("GeoJSON: ", geoJSON);
 
-        // read birth rates & add them to geoJSON
+        // read fertility rates & add them to geoJSON
         d3.csv(fertilityRateFilePath)
           .then(function (fertilityRateData) {
             // if we have successfully read the csv
@@ -157,14 +158,19 @@
              ************************************************************/
 
             // Now that we have added fertilityRates to geoJSON, display them in color on the map
-            let fertilityRateExtent = d3.extent(
+            const fertilityRateExtent = d3.extent(
               geoJSON.features,
               (feature) => feature.properties.fertilityRate
+            );
+            fertilityRateExtent.splice(
+              1,
+              0,
+              fertilityRateExtent[0] * 0.5 + fertilityRateExtent[1] * 0.5
             );
             const colorScale = d3
               .scaleLinear()
               .domain(fertilityRateExtent)
-              .range(["blue", "red"]);
+              .range(["blue", "white", "red"]);
 
             // log
             console.log("fertilityRateExtent: ", fertilityRateExtent);
@@ -190,7 +196,7 @@
           .catch(function (error) {
             console.error("Error loading JSON:", error);
           });
-      }); // finished reading the topoJSON file
+      });
 
       /******************
        * Define zoom behavior
